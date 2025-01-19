@@ -98,7 +98,7 @@ class GameState():
     Get all the rook moves for the rook located at row, col and add them to the list of moves.
     '''
     def getRookMoves(self, r, c, moves):
-
+        pass
 
     '''
     Get all the Knight moves for the rook located at row, col and add them to the list of moves.
