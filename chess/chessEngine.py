@@ -3,7 +3,7 @@ This class is responsible for storing all the information about the current stat
 It will also be responsible for determining the valid moves at current state.
 It will also keep mov log.
 """
-class GameState():
+class GameState:
     def __init__(self):
         #board is 8x8 2d list ,each element of the list has 2 characters.
         #The first character represents the color of the piece, 'b' or 'w'
@@ -47,7 +47,7 @@ class GameState():
     All moves considering checks.
     '''
     def getValidMoves(self):
-        return self.getAllPossibleMoves() #for now we will not worry about checks
+        return self.getAllPossibleMoves() #for, now we will not worry about checks
 
 
     '''
@@ -125,7 +125,7 @@ class GameState():
         pass
 
 
-class Move():
+class Move:
     #maps keys to values
     #key : value
     ranksToRows = {"1": 7, "2": 6, "3": 5, "4": 4,
