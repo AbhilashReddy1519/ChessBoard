@@ -93,7 +93,7 @@ class GameState:
             if c+1 <= 7: #captures to right
                 if self.board[r+1][c+1][0] == 'w': #captures to right
                     moves.append(Move((r,c), (r+1,c+1), self.board))
-        #lets add pawn promotions
+        #let's add pawn promotions
     '''
     Get all the rook moves for the rook located at row, col and add them to the list of moves.
     '''
