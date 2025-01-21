@@ -120,25 +120,59 @@ class GameState:
     Get all the Knight moves for the rook located at row, col and add them to the list of moves.
     '''
     def getKnightMoves(self,r ,c , moves):
-        pass
+        knightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
+        allyColor = "w" if self.whiteToMove else "b"
+        for m in knightMoves:
+            endRow = r + m[0]
+            endCol = c + m[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != allyColor: #not an ally piece (empty or enemy piece)
+                    moves.append(Move((r,c), (endRow,endCol), self.board))
+
 
     '''
     Get all the Bishop moves for the rook located at row, col and add them to the list of moves.
     '''
     def getBishopMoves(self,r ,c , moves):
-        pass
+        directions = ((-1, -1), (-1, 1), (1, -1), (1, 1)) #4 diagonals
+        enemyColor = "b" if self.whiteToMove else "w"
+        for d in directions:
+            for i in range(1, 8): #bishop can move max of 7 squares
+                endRow = r + d[0] * i
+                endCol = r + d[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8: #is it on board
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece == "--": #empty space valid
+                        moves.append(Move((r,c), (endRow,endCol), self.board))
+                    elif endPiece[0] == enemyColor: #enemy piece valid
+                        moves.append(Move((r,c), (endRow,endCol), self.board))
+                        break
+                    else: #friendly piece invalid
+                        break
+                else: #off board
+                    break
 
     '''
     Get all the Queen moves for the rook located at row, col and add them to the list of moves.
     '''
-    def getQueenMoves(self,r ,c , moves):
-        pass
+    def getQueenMoves(self,r ,c , moves): #since queen moves are combination of knight and bishop
+        self.getRookMoves(r ,c , moves)
+        self.getBishopMoves(r ,c , moves)
 
     '''
     Get all the king moves for the rook located at row, col and add them to the list of moves.
     '''
     def getKingMoves(self,r ,c , moves):
-        pass
+        kingMoves = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
+        allyColor = "w" if self.whiteToMove else "b"
+        for i in range(8):
+            endRow = r + kingMoves[i][0]
+            endCol = c + kingMoves[i][1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != allyColor: #not an ally piece (enemy or empty)
+                    moves.append(Move((r,c), (endRow,endCol), self.board))
 
 
 class Move:
