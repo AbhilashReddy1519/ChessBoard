@@ -196,7 +196,7 @@ class GameState:
         for d in directions:
             for i in range(1, 8): #bishop can move max of 7 squares
                 endRow = r + d[0] * i
-                endCol = r + d[1] * i
+                endCol = c + d[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8: #is it on board
                     endPiece = self.board[endRow][endCol]
                     if endPiece == "--": #empty space valid
