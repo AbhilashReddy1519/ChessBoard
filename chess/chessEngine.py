@@ -28,6 +28,10 @@ class GameState:
         self.blackKingLocation = (0, 4)
         self.checkMate = False
         self.staleMate = False
+
+
+
+
     '''
     Takes a move as parameter and executes it.(this will not work for castling, pawn promotion and en passant)
     '''
@@ -38,11 +42,15 @@ class GameState:
         self.whiteToMove = not self.whiteToMove #swap players
         # update the king's location if moved
         if move.pieceMoved[1] == "wK":
-            self.whiteKingLocation = (
-            move.endRow, move.endCol)  # if self.whiteToMove else (move.startRow, move.startCol)
+            self.whiteKingLocation = (move.endRow, move.endCol)  # if self.whiteToMove else (move.startRow, move.startCol)
         elif move.pieceMoved[1] == "bk":
-            self.blackKingLocation = (
-            move.endRow, move.endCol)  # if self.whiteToMove else (move.startRow, move.startCol)
+            self.blackKingLocation = (move.endRow, move.endCol)  # if self.whiteToMove else (move.startRow, move.startCol)
+
+        #pawn promotion
+        if move.isPawnPromotion:
+            self.board[move.endRow][move.endCol] = move.pieceMoved[0] + 'Q'
+
+
     '''
     Undo the last move made.
     '''
@@ -54,11 +62,9 @@ class GameState:
             self.whiteToMove = not self.whiteToMove #switch turns back
             # update the king's position if needed
             if move.pieceMoved[1] == "wK":
-                self.whiteKingLocation = (
-                move.startRow, move.startCol)  # if self.whiteToMove else (move.endRow, move.endCol)
+                self.whiteKingLocation = (move.startRow, move.startCol)  # if self.whiteToMove else (move.endRow, move.endCol)
             elif move.pieceMoved[1] == "bk":
-                self.blackKingLocation = (
-                move.startRow, move.startCol)  # if self.whiteToMove else (move.endRow, move.endCol)
+                self.blackKingLocation = (move.startRow, move.startCol)  # if self.whiteToMove else (move.endRow, move.endCol)
 
 
     '''
@@ -253,6 +259,10 @@ class Move:
         self.endCol = endSq[1]
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
+        self.isPawnPromotion = False
+        if (self.pieceMoved == 'wp' and self.endRow == 0) or (self.pieceMoved == 'bp' and self.endRow == 7):
+            self.isPawnPromotion = True
+
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
 
 
@@ -265,6 +275,7 @@ class Move:
         return False
 
     def getChessNotation(self):
+        #you can add to make this like real chess notation
         return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
 
 
