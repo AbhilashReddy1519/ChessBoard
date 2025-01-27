@@ -11,6 +11,8 @@ DIMENSION = 8 #dimensions of a chess board are 8x8
 SQ_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 15 #for animation later on
 IMAGES = {}
+colors = [p.Color("#EBECD0"), p.Color("#739552")]
+
 
 '''
 Initialise a global dictionary of images. This will be called exactly once in the main
