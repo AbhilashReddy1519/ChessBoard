@@ -42,42 +42,47 @@ def main():
     running = True
     sqSelected = () #no square is selected, keep track of the last click of the user (tuple: (row, col))
     playerClicks = [] #keep track of player clicks (two tuples: [(6, 4), (4,4)])
-
+    gameOver = False
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             #mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
-                location = p.mouse.get_pos() #(x, y) location of mouse
-                col = location[0]//SQ_SIZE
-                row = location[1]//SQ_SIZE
-                if sqSelected == (row, col): #user clicked the same square twice
-                    sqSelected = () #deselect
-                    playerClicks = [] #clear player clicks
-                else:
-                    sqSelected = (row, col)
-                    playerClicks.append(sqSelected) #append for both 1st and 2nd click
-                if len(playerClicks) == 2: #after 2nd click
-                    move = chessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    print(move.getChessNotation())
-                    for i in range(len(validMoves)):
-                        if move == validMoves[i]:
-                            gs.makeMove(validMoves[i])
-                            moveMade = True
-                            animate = True
-                            sqSelected = () #reset user clicks
-                            playerClicks = []
-                    if not moveMade:
-                        playerClicks = [sqSelected]
+                if not gameOver:
+                    location = p.mouse.get_pos() #(x, y) location of mouse
+                    col = location[0]//SQ_SIZE
+                    row = location[1]//SQ_SIZE
+                    if sqSelected == (row, col): #user clicked the same square twice
+                        sqSelected = () #deselect
+                        playerClicks = [] #clear player clicks
+                    else:
+                        sqSelected = (row, col)
+                        playerClicks.append(sqSelected) #append for both 1st and 2nd click
+                    if len(playerClicks) == 2: #after 2nd click
+                        move = chessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
+                        print(move.getChessNotation())
+                        for i in range(len(validMoves)):
+                            if move == validMoves[i]:
+                                gs.makeMove(validMoves[i])
+                                moveMade = True
+                                animate = True
+                                sqSelected = () #reset user clicks
+                                playerClicks = []
+                        if not moveMade:
+                            playerClicks = [sqSelected]
             #key handlers
             elif e.type == p.KEYDOWN:
                     if e.key == p.K_z: #undo when 'z' is pressed
                         gs.undoMove()
                         moveMade = True
                         animate = False
-
-
+                    if e.key == p.K_r: #reset the board when 'r' is pressed
+                        gs = chessEngine.GameState()
+                        validMoves = gs.getValidMoves()
+                        sqSelected = ()
+                        moveMade = False
+                        animate = False
         if moveMade:
             if animate:
                 animateMove(gs.moveLog[-1], screen, gs.board, clock)
@@ -86,8 +91,19 @@ def main():
             animate = False
 
         drawGameState(screen, gs, validMoves, sqSelected)
+
+        if gs.checkMate:
+            gameOver = True
+            if gs.whiteToMove:
+                drawText(screen, "Black wins by checkmate.")
+            else:
+                drawText(screen, "White wins by checkmate.")
+        elif gs.staleMate:
+            drawText(screen, "Stalemate.")
+
         clock.tick(MAX_FPS)
         p.display.flip()
+
 '''
 Highlight the square and moves that the user has selected.
 '''
@@ -162,7 +178,16 @@ def animateMove(move, screen, board, clock):
         screen.blit(IMAGES[move.pieceMoved], p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
         p.display.flip()
         clock.tick(60)
-
+'''
+Display text on the screen.
+'''
+def drawText(screen, text):
+    font = p.font.SysFont("Arial", 32, True, True)
+    textObject = font.render(text, 0, p.Color("black"))
+    textLocation = p.Rect(0, 0, WIDTH, HEIGHT).move(WIDTH/2 - textObject.get_width()/2, HEIGHT/2 - textObject.get_height()/2)
+    screen.blit(textObject, textLocation)
+    textObject = font.render(text, 0, p.Color("white"))
+    screen.blit(textObject, textLocation.move(2, 2))
 
 if __name__ == "__main__":
     main()
