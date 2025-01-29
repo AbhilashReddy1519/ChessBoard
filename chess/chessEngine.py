@@ -44,9 +44,9 @@ class GameState:
         self.moveLog.append(move) #log the move so we can undo it later
         self.whiteToMove = not self.whiteToMove #swap players
         # update the king's location if moved
-        if move.pieceMoved[1] == "wK":
+        if move.pieceMoved == "wK":
             self.whiteKingLocation = (move.endRow, move.endCol)  # if self.whiteToMove else (move.startRow, move.startCol)
-        elif move.pieceMoved[1] == "bk":
+        elif move.pieceMoved == "bk":
             self.blackKingLocation = (move.endRow, move.endCol)  # if self.whiteToMove else (move.startRow, move.startCol)
 
         #pawn promotion
@@ -89,9 +89,9 @@ class GameState:
             self.board[move.endRow][move.endCol] = move.pieceCaptured
             self.whiteToMove = not self.whiteToMove #switch turns back
             # update the king's position if needed
-            if move.pieceMoved[1] == "wK":
+            if move.pieceMoved == "wK":
                 self.whiteKingLocation = (move.startRow, move.startCol)  # if self.whiteToMove else (move.endRow, move.endCol)
-            elif move.pieceMoved[1] == "bk":
+            elif move.pieceMoved == "bk":
                 self.blackKingLocation = (move.startRow, move.startCol)  # if self.whiteToMove else (move.endRow, move.endCol)
             #undo enpassant
             if move.isEnPassantMove:
@@ -135,9 +135,9 @@ class GameState:
         elif move.pieceMoved == 'bR':
             if move.startRow == 0:
                 if move.startCol == 0: #left rook
-                    self.currentCastlingRight.wqs = False
+                    self.currentCastlingRight.bqs = False
                 elif move.startCol == 7: #right rook
-                    self.currentCastlingRight.wks = False
+                    self.currentCastlingRight.bks = False
 
 
 
@@ -177,6 +177,8 @@ class GameState:
         self.enpassantPossible = tempEnpassantPossible
         self.currentCastlingRight = tempCastleRights
         return moves
+
+
 
     '''
     Determine if the current player is in check.
