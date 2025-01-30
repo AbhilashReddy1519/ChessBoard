@@ -4,7 +4,7 @@ It will be responsible for handling user input and displaying the current GameSt
 """
 
 import pygame as p
-from chess import chessEngine
+from chess import chessEngine,ChessAI
 
 WIDTH = HEIGHT = 512 #400 is another option
 DIMENSION = 8 #dimensions of a chess board are 8x8
@@ -43,13 +43,17 @@ def main():
     sqSelected = () #no square is selected, keep track of the last click of the user (tuple: (row, col))
     playerClicks = [] #keep track of player clicks (two tuples: [(6, 4), (4,4)])
     gameOver = False
+    playerOne = False #if a human is playing white, then this will be true. If AI is playing then false
+    playerTwo = False #same as above but for black
+
     while running:
+        humanTurn = (gs.whiteToMove and playerOne) or (not gs.whiteToMove and playerTwo)
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             #mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
-                if not gameOver:
+                if not gameOver and humanTurn:
                     location = p.mouse.get_pos() #(x, y) location of mouse
                     col = location[0]//SQ_SIZE
                     row = location[1]//SQ_SIZE
@@ -83,6 +87,14 @@ def main():
                         sqSelected = ()
                         moveMade = False
                         animate = False
+
+        #AI move finder
+        if not gameOver and not humanTurn:
+            AIMove = ChessAI.findRandomMove(validMoves)
+            gs.makeMove(AIMove)
+            moveMade = True
+            animate = True
+
         if moveMade:
             if animate:
                 animateMove(gs.moveLog[-1], screen, gs.board, clock)
