@@ -171,9 +171,9 @@ class GameState:
                 self.checkMate = True
             else:
                 self.staleMate = True
-        # else:
-        #     self.checkMate = False
-        #     self.staleMate = False
+        else: # Reset checkmate and stalemate if moves are available
+            self.checkMate = False
+            self.staleMate = False
         self.enpassantPossible = tempEnpassantPossible
         self.currentCastlingRight = tempCastleRights
         return moves
