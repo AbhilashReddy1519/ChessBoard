@@ -3,8 +3,8 @@ import random
 
 
 
-def findRandomMove(vaildMoves):
-    return vaildMoves[random.randint(0, len(vaildMoves)-1)]
+def findRandomMove(validMoves):
+    return validMoves[random.randint(0, len(validMoves) - 1)]
 
-def findBestMove(vaildMoves):
+def findBestMove(validMoves):
     pass
