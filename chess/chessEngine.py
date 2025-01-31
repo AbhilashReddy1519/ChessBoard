@@ -19,9 +19,15 @@ class GameState:
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
-        self.moveFunctions = {'p': self.getPawnMoves, 'R': self.getRookMoves, 'N':self.getKnightMoves,
-                               'B':self.getBishopMoves, 'Q':self.getQueenMoves, 'K':self.getKingMoves}
-
+        self.moveFunctions = {
+            'p': self.getPawnMoves,
+            'R': self.getRookMoves,
+            'N':self.getKnightMoves,
+            'B':self.getBishopMoves,
+            'Q':self.getQueenMoves,
+            'K':self.getKingMoves
+        }
+        # Game state variables
         self.whiteToMove = True
         self.moveLog = []
         self.whiteKingLocation = (7, 4)
@@ -46,7 +52,7 @@ class GameState:
         # update the king's location if moved
         if move.pieceMoved == "wK":
             self.whiteKingLocation = (move.endRow, move.endCol)  # if self.whiteToMove else (move.startRow, move.startCol)
-        elif move.pieceMoved == "bk":
+        elif move.pieceMoved == "bK":
             self.blackKingLocation = (move.endRow, move.endCol)  # if self.whiteToMove else (move.startRow, move.startCol)
 
         #pawn promotion
@@ -91,7 +97,7 @@ class GameState:
             # update the king's position if needed
             if move.pieceMoved == "wK":
                 self.whiteKingLocation = (move.startRow, move.startCol)  # if self.whiteToMove else (move.endRow, move.endCol)
-            elif move.pieceMoved == "bk":
+            elif move.pieceMoved == "bK":
                 self.blackKingLocation = (move.startRow, move.startCol)  # if self.whiteToMove else (move.endRow, move.endCol)
             #undo enpassant
             if move.isEnPassantMove:

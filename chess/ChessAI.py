@@ -13,6 +13,8 @@ STALEMATE = 0
 Picks and returns a random move.
 '''
 def findRandomMove(validMoves):
+    if not validMoves:  # Check for empty list of moves
+        return None
     return validMoves[random.randint(0, len(validMoves) - 1)]
 
 '''
@@ -23,12 +25,15 @@ def findBestMove(gs, validMoves):
     opponentMinMaxScore = CHECKMATE
     bestPlayerMove = None
     random.shuffle(validMoves)
+    # Loop through all player's legal moves
     for playerMove in validMoves:
-        gs.makeMove(playerMove)
+        gs.makeMove(playerMove) # Make the player's move
         opponentMoves = gs.getValidMoves()
         opponentMaxScore = -CHECKMATE
+        # Loop through opponent's legal moves
         for opponentMove in opponentMoves:
-            gs.makeMove(opponentMove)
+            gs.makeMove(opponentMove)  # Make the opponent's move
+            # Evaluate game state
             if gs.checkMate:
                 score = -turnMultiplier * CHECKMATE
             elif gs.staleMate:
@@ -37,11 +42,11 @@ def findBestMove(gs, validMoves):
                 score = -turnMultiplier * scoreMaterial(gs.board)
             if score > opponentMaxScore:
                 opponentMaxScore = score
-            gs.undoMove()
+            gs.undoMove() # Undo opponent's move
         if opponentMaxScore < opponentMinMaxScore:
             opponentMinMaxScore = opponentMaxScore
             bestPlayerMove = playerMove
-        gs.undoMove()
+        gs.undoMove()  # Undo player's move
 
     return bestPlayerMove
 '''
@@ -51,12 +56,15 @@ def scoreMaterial(board):
     score = 0
     for row in board:
         for square in row:
-            if square[0] == 'w':
-                score += pieceScore[square[1]]
-            elif square[0] == 'b':
-                score -= pieceScore[square[1]]
+            if not square:  # Check if square is empty
+                continue
+            if square[0] == 'w':  # White pieces
+                score += pieceScore.get(square[1], 0)  # Use .get to avoid KeyError
+            elif square[0] == 'b':  # Black pieces
+                score -= pieceScore.get(square[1], 0)  # Use .get to avoid KeyError
 
     return score
+
 
 
 

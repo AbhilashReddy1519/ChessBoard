@@ -10,7 +10,7 @@ WIDTH = HEIGHT = 512 #400 is another option
 DIMENSION = 8 #dimensions of a chess board are 8x8
 SQ_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 15 #for animation later on
-IMAGES = {}
+IMAGES = {} # Key-Value mapping to load chess piece images
 colors = [p.Color("#EBECD0"), p.Color("#739552")]
 
 
@@ -20,9 +20,13 @@ Initialise a global dictionary of images. This will be called exactly once in th
 
 def loadImages():
     pieces = ['wp', 'wR', 'wN', 'wB', 'wK', 'wQ', 'bp', 'bR', 'bN', 'bB', 'bK', 'bQ']
-    for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load("images/"+piece+".png"),(SQ_SIZE, SQ_SIZE))
-    #Note: we can access an image by saying IMAGES['wp']
+    try:
+        for piece in pieces:
+            IMAGES[piece] = p.transform.scale(p.image.load(f"images/{piece}.png"), (SQ_SIZE, SQ_SIZE))
+    except Exception as e:
+        print(f"Error while loading images: {e}")
+
+#Note: we can access an image by saying IMAGES['wp']
 
 '''
 The main driver for code.This will handle user input and updating the graphics.
@@ -43,7 +47,7 @@ def main():
     sqSelected = () #no square is selected, keep track of the last click of the user (tuple: (row, col))
     playerClicks = [] #keep track of player clicks (two tuples: [(6, 4), (4,4)])
     gameOver = False
-    playerOne = False #if a human is playing white, then this will be true. If AI is playing then false
+    playerOne = True #if a human is playing white, then this will be true. If AI is playing then false
     playerTwo = False #same as above but for black
 
     while running:
@@ -58,7 +62,7 @@ def main():
                     col = location[0]//SQ_SIZE
                     row = location[1]//SQ_SIZE
                     if sqSelected == (row, col): #user clicked the same square twice
-                        sqSelected = () #deselect
+                        sqSelected = None #deselect
                         playerClicks = [] #clear player clicks
                     else:
                         sqSelected = (row, col)
@@ -81,12 +85,15 @@ def main():
                         gs.undoMove()
                         moveMade = True
                         animate = False
+
                     if e.key == p.K_r: #reset the board when 'r' is pressed
                         gs = chessEngine.GameState()
                         validMoves = gs.getValidMoves()
-                        sqSelected = ()
+                        sqSelected = None
+                        playerClicks = []
                         moveMade = False
                         animate = False
+                        gameOver = False
 
         #AI move finder
         if not gameOver and not humanTurn:
@@ -108,11 +115,9 @@ def main():
 
         if gs.checkMate:
             gameOver = True
-            if gs.whiteToMove:
-                drawText(screen, "Black wins by checkmate.")
-            else:
-                drawText(screen, "White wins by checkmate.")
+            drawText(screen, "Black wins by checkmate." if gs.whiteToMove else "White wins by checkmate.")
         elif gs.staleMate:
+            gameOver = True
             drawText(screen, "Stalemate.")
 
         clock.tick(MAX_FPS)
