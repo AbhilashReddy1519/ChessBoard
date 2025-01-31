@@ -20,20 +20,30 @@ def findRandomMove(validMoves):
 '''
 Find the best move based on material alone.
 '''
+
+
 def findBestMove(gs, validMoves):
     turnMultiplier = 1 if gs.whiteToMove else -1
     opponentMinMaxScore = CHECKMATE
     bestPlayerMove = None
     random.shuffle(validMoves)
-    # Loop through all player's legal moves
+
+    # Save original checkmate and stalemate states
+    originalCheckmate = gs.checkMate
+    originalStalemate = gs.staleMate
+
     for playerMove in validMoves:
-        gs.makeMove(playerMove) # Make the player's move
+        gs.makeMove(playerMove)
         opponentMoves = gs.getValidMoves()
         opponentMaxScore = -CHECKMATE
-        # Loop through opponent's legal moves
+
+        # Save states before opponent's moves
+        tempCheckmate = gs.checkMate
+        tempStalemate = gs.staleMate
+
         for opponentMove in opponentMoves:
-            gs.makeMove(opponentMove)  # Make the opponent's move
-            # Evaluate game state
+            gs.makeMove(opponentMove)
+            # Evaluate the position
             if gs.checkMate:
                 score = -turnMultiplier * CHECKMATE
             elif gs.staleMate:
@@ -42,11 +52,19 @@ def findBestMove(gs, validMoves):
                 score = -turnMultiplier * scoreMaterial(gs.board)
             if score > opponentMaxScore:
                 opponentMaxScore = score
-            gs.undoMove() # Undo opponent's move
+            gs.undoMove()
+            # Reset checkmate/stalemate after undo
+            gs.checkMate = tempCheckmate
+            gs.staleMate = tempStalemate
+
+        # Restore original states after evaluating all opponent moves
+        gs.undoMove()
+        gs.checkMate = originalCheckmate
+        gs.staleMate = originalStalemate
+
         if opponentMaxScore < opponentMinMaxScore:
             opponentMinMaxScore = opponentMaxScore
             bestPlayerMove = playerMove
-        gs.undoMove()  # Undo player's move
 
     return bestPlayerMove
 '''

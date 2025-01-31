@@ -62,14 +62,14 @@ def main():
                     col = location[0]//SQ_SIZE
                     row = location[1]//SQ_SIZE
                     if sqSelected == (row, col): #user clicked the same square twice
-                        sqSelected = None #deselect
+                        sqSelected = () #deselect
                         playerClicks = [] #clear player clicks
                     else:
                         sqSelected = (row, col)
                         playerClicks.append(sqSelected) #append for both 1st and 2nd click
                     if len(playerClicks) == 2: #after 2nd click
                         move = chessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                        print(move.getChessNotation())
+                        print("move by human: "+move.getChessNotation())
                         for i in range(len(validMoves)):
                             if move == validMoves[i]:
                                 gs.makeMove(validMoves[i])
@@ -89,7 +89,7 @@ def main():
                     if e.key == p.K_r: #reset the board when 'r' is pressed
                         gs = chessEngine.GameState()
                         validMoves = gs.getValidMoves()
-                        sqSelected = None
+                        sqSelected = ()
                         playerClicks = []
                         moveMade = False
                         animate = False
@@ -101,6 +101,7 @@ def main():
             if AIMove is None:
                 AIMove = ChessAI.findRandomMove(validMoves)
             gs.makeMove(AIMove)
+            print("move by AI: " + AIMove.getChessNotation())  # Print the AI's move
             moveMade = True
             animate = True
 
