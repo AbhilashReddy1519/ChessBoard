@@ -102,30 +102,31 @@ def findMoveMinMax(gs, validMoves, depth, whiteToMove):
 
         return minScore
 
+
+
 '''
-A positive score is good for white. A negative score is good for black.
+Evaluate the board state for scoring the AI's decision-making.
+This function combines material and positional evaluation.
 '''
+
 
 def scoreBoard(gs):
     if gs.checkMate:
-        if gs.whiteToMove:
-            return -CHECKMATE #black wins
-        else:
-            return CHECKMATE #white wins
+        return CHECKMATE if not gs.whiteToMove else -CHECKMATE
     elif gs.staleMate:
         return STALEMATE
 
-    score = 0
-    for row in gs.board:
-        for square in row:
-            if not square:  # Check if square is empty
-                continue
-            if square[0] == 'w':  # White pieces
-                score += pieceScore.get(square[1], 0)  # Use .get to avoid KeyError
-            elif square[0] == 'b':  # Black pieces
-                score -= pieceScore.get(square[1], 0)  # Use .get to avoid KeyError
+    # Consider material balance
+    materialScore = scoreMaterial(gs.board)
 
-    return score
+    # Optionally, you can add more heuristics for better evaluation, like:
+    # - Piece mobility (how many moves the player can make)
+    # - King safety
+    # - Control of the center
+    # These can be added to refine the AI further.
+
+    return materialScore
+
 
 '''
 Score the board based on material.

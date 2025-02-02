@@ -240,12 +240,12 @@ class GameState:
             if c-1 >= 0: #capture to the left
                 if self.board[r-1][c-1][0] == 'b': #enemy piece to capture
                     moves.append(Move((r,c), (r-1,c-1), self.board)) #here check if code not work change r-1,c-1 after move
-                elif (r , c -1) == self.enpassantPossible:
+                elif (r - 1, c -1) == self.enpassantPossible:
                     moves.append(Move((r,c), (r-1,c-1), self.board, isEnpassantMove=True))
             if c+1 <= 7: #captures to right
                 if self.board[r-1][c+1][0] == 'b': #captures to right
                     moves.append(Move((r,c), (r-1,c+1), self.board))
-                elif (r , c + 1) == self.enpassantPossible:
+                elif (r - 1, c + 1) == self.enpassantPossible:
                     moves.append(Move((r,c), (r-1,c+1), self.board, isEnpassantMove=True))
 
         else: #black pawn moves
@@ -256,12 +256,12 @@ class GameState:
             if c-1 >= 0: #capture to the left
                 if self.board[r+1][c-1][0] == 'w': #captures to right
                     moves.append(Move((r,c), (r+1,c-1), self.board))
-                elif (r , c -1) == self.enpassantPossible:
+                elif (r + 1, c -1) == self.enpassantPossible:
                     moves.append(Move((r,c), (r+1,c-1), self.board, isEnpassantMove=True))
             if c+1 <= 7: #captures to right
                 if self.board[r+1][c+1][0] == 'w': #captures to right
                     moves.append(Move((r,c), (r+1,c+1), self.board))
-                elif (r , c + 1) == self.enpassantPossible:
+                elif (r + 1, c + 1) == self.enpassantPossible:
                     moves.append(Move((r,c), (r+1,c+1), self.board, isEnpassantMove=True))
         #let's add pawn promotions
     '''
