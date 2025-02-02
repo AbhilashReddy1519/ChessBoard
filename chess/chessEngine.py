@@ -45,8 +45,8 @@ class GameState:
     Takes a move as parameter and executes it.(this will not work for castling, pawn promotion and en passant)
     '''
     def makeMove(self, move):
-        self.board[move.startRow][move.startCol] = "--"
-        self.board[move.endRow][move.endCol] = move.pieceMoved
+        self.board[move.startRow][move.startCol] = "--" # Clear initial square
+        self.board[move.endRow][move.endCol] = move.pieceMoved # Move piece to target square
         self.moveLog.append(move) #log the move so we can undo it later
         self.whiteToMove = not self.whiteToMove #swap players
         # update the king's location if moved
@@ -119,6 +119,10 @@ class GameState:
                 else: #queenside
                     self.board[move.endRow][move.endCol-2] = self.board[move.endRow][move.endCol+1]
                     self.board[move.endRow][move.endCol+1] = '--'
+
+
+            self.checkMate = False
+            self.staleMate = False
 
 
 

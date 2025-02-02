@@ -69,7 +69,10 @@ def main():
                         playerClicks.append(sqSelected) #append for both 1st and 2nd click
                     if len(playerClicks) == 2: #after 2nd click
                         move = chessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                        print("move by human: "+move.getChessNotation())
+                        if playerOne:
+                            print("move by Human: "+move.getChessNotation())
+                        else:
+                            print("move by AI: "+move.getChessNotation())
                         for i in range(len(validMoves)):
                             if move == validMoves[i]:
                                 gs.makeMove(validMoves[i])
@@ -83,8 +86,11 @@ def main():
             elif e.type == p.KEYDOWN:
                     if e.key == p.K_z: #undo when 'z' is pressed
                         gs.undoMove()
+                        if not playerTwo:
+                            gs.undoMove()
                         moveMade = True
                         animate = False
+                        gameOver = False
 
                     if e.key == p.K_r: #reset the board when 'r' is pressed
                         gs = chessEngine.GameState()
@@ -97,7 +103,7 @@ def main():
 
         #AI move finder
         if not gameOver and not humanTurn:
-            AIMove = ChessAI.findBestMove(gs, validMoves)
+            AIMove = ChessAI.findBestMoveMinMax(gs, validMoves)
             if AIMove is None:
                 AIMove = ChessAI.findRandomMove(validMoves)
             gs.makeMove(AIMove)
