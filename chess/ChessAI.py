@@ -5,10 +5,68 @@ This is responsible for handling AI moves by using different algorithms.
 import random
 
 pieceScore = {"K": 0, "Q": 10, "R": 5, "B": 3, "N": 3, "p": 1}
+knightScores = [[1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 2, 2, 2, 2, 2, 2, 1],
+                [1, 2, 3, 3, 3, 3, 2, 1],
+                [1, 2, 3, 4, 4, 3, 2, 1],
+                [1, 2, 3, 4, 4, 3, 2, 1],
+                [1, 2, 3, 3, 3, 3, 2, 1],
+                [1, 2, 2, 2, 2, 2, 2, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1]]
+
+bishopScores = [[4, 3, 2, 1, 1, 2, 3, 4],
+                [3, 4, 3, 2, 2, 3, 4, 3],
+                [2, 3, 4, 3, 3, 4, 3, 2],
+                [1, 2, 3, 4, 4, 3, 2, 1],
+                [1, 2, 3, 4, 4, 3, 2, 1],
+                [2, 3, 4, 3, 3, 4, 3, 2],
+                [3, 4, 3, 2, 2, 3, 4, 3],
+                [4, 3, 2, 1, 1, 2, 3, 4]]
+
+queenScores = [[1, 1, 1, 3, 1, 1, 1, 1],
+               [1, 2, 3, 3, 3, 1, 1, 1],
+               [1, 4, 3, 3, 3, 4, 2, 1],
+               [1, 2, 3, 3, 3, 2, 2, 1],
+               [1, 2, 3, 3, 3, 2, 2, 1],
+               [1, 4, 3, 3, 3, 4, 2, 1],
+               [1, 1, 2, 3, 3, 1, 1, 1],
+               [1, 1, 1, 3, 1, 1, 1, 1]]
+
+rookScores = [[4, 3, 4, 4, 4, 4, 3, 4],
+              [4, 4, 4, 4, 4, 4, 4, 4],
+              [1, 1, 2, 3, 3, 2, 1, 1],
+              [1, 2, 3, 4, 4, 3, 2, 1],
+              [1, 2, 3, 4, 4, 3, 2, 1],
+              [1, 1, 2, 2, 2, 2, 1, 1],
+              [4, 4, 4, 4, 4, 4, 4, 4],
+              [4, 3, 2, 1, 1, 2, 3, 4]]
+
+whitePawnScores = [[8, 8, 8, 8, 8, 8, 8, 8],
+                   [8, 8, 8, 8, 8, 8, 8, 8],
+                   [5, 6, 6, 7, 7, 6, 6, 5],
+                   [2, 3, 3, 5, 5, 3, 3, 2],
+                   [1, 2, 3, 4, 4, 3, 2, 1],
+                   [1, 1, 2, 3, 3, 2, 1, 1],
+                   [1, 1, 1, 0, 0, 1, 1, 1],
+                   [0, 0, 0, 0, 0, 0, 0, 0]]
+
+blackPawnScores = [[0, 0, 0, 0, 0, 0, 0, 0],
+                   [1, 1, 1, 0, 0, 1, 1, 1],
+                   [1, 1, 2, 3, 3, 2, 1, 1],
+                   [1, 2, 3, 4, 4, 3, 2, 1],
+                   [2, 3, 3, 5, 5, 3, 3, 2],
+                   [5, 6, 6, 7, 7, 6, 6, 5],
+                   [8, 8, 8, 8, 8, 8, 8, 8],
+                   [8, 8, 8, 8, 8, 8, 8, 8]]
+
+piecePositionScores = {"N": knightScores, "B": bishopScores, "Q": queenScores,
+                       "R": rookScores, "wp": whitePawnScores, "bp": blackPawnScores}
+
 CHECKMATE = 1000
 STALEMATE = 0
-DEPTH = 2
+DEPTH = 3
 nextMove = None
+SET_WHITE_AS_BOT = -1
 
 
 '''
@@ -22,127 +80,93 @@ def findRandomMove(validMoves):
 '''
 Find the best move based on material alone.
 '''
-def findBestMove(gs, validMoves):
-    turnMultiplier = 1 if gs.whiteToMove else -1
-    opponentMinMaxScore = CHECKMATE
-    bestPlayerMove = None
-    random.shuffle(validMoves)
-    # Loop through all player's legal moves
-    for playerMove in validMoves:
-        gs.makeMove(playerMove) # Make the player's move
-        opponentMoves = gs.getValidMoves()
-        if gs.staleMate:
-            opponentMaxScore = STALEMATE
-        elif gs.checkMate:
-            opponentMaxScore = -CHECKMATE
-        else:
-            opponentMaxScore = -CHECKMATE
-            # Loop through opponent's legal moves
-            for opponentMove in opponentMoves:
-                gs.makeMove(opponentMove)  # Make the opponent's move
-                gs.getValidMoves()
-                # Evaluate game state
-                if gs.checkMate:
-                    score = CHECKMATE
-                elif gs.staleMate:
-                    score = STALEMATE
-                else:
-                    score = -turnMultiplier * scoreMaterial(gs.board)
-                if score > opponentMaxScore:
-                    opponentMaxScore = score
-                gs.undoMove() # Undo opponent's move
-        if opponentMaxScore < opponentMinMaxScore:
-            opponentMinMaxScore = opponentMaxScore
-            bestPlayerMove = playerMove
-        gs.undoMove()  # Undo player's move
-
-    return bestPlayerMove
-
-'''
-Helper method to make first recursive call.
-'''
-def findBestMoveMinMax(gs, validMoves):
-    global nextMove
+def findBestMove(gs, validMoves, returnQueue):
+    global nextMove, whitePawnScores, blackPawnScores
     nextMove = None
-    findMoveMinMax(gs, validMoves, DEPTH, gs.whiteToMove)
-    return nextMove
+    random.shuffle(validMoves)
+
+    if gs.playerWantsToPlayAsBlack:
+        # Swap the variables
+        whitePawnScores, blackPawnScores = blackPawnScores, whitePawnScores
+
+    SET_WHITE_AS_BOT = 1 if gs.whiteToMove else -1
+
+    findMoveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -
+    CHECKMATE, CHECKMATE, SET_WHITE_AS_BOT)
+
+    returnQueue.put(nextMove)
+
 
 '''
 Finds best move by minimax algorithm.
 '''
 
-def findMoveMinMax(gs, validMoves, depth, whiteToMove):
+
+def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
     global nextMove
     if depth == 0:
-        return scoreMaterial(gs.board)
-    if whiteToMove:
-        maxScore = -CHECKMATE
-        for move in validMoves:
-            gs.makeMove(move)
-            nextMoves = gs.getValidMoves()
-            score = -findMoveMinMax(gs, nextMoves, depth - 1, False)
-            gs.undoMove()
-            if score > maxScore:
-                maxScore = score
-                if depth == DEPTH:
-                    nextMove = move
+        return turnMultiplier * scoreBoard(gs)
 
-        return maxScore
-    else:
-        minScore = CHECKMATE
-        for move in validMoves:
-            gs.makeMove(move)
-            nextMoves = gs.getValidMoves()
-            score = findMoveMinMax(gs, nextMoves, depth - 1, True)
-            gs.undoMove()
-            if score < minScore:
-                minScore = score
-                if depth == DEPTH:
-                    nextMove = move
+    # (will add later) move ordering - like evaluate all the move first that results in check or evaluate all the move first that results in capturing opponent's queen
 
-        return minScore
-
-
+    maxScore = -CHECKMATE
+    for move in validMoves:
+        gs.makeMove(move)
+        nextMoves = gs.getValidMoves()  # opponent valid moves
+        score = -findMoveNegaMaxAlphaBeta(gs, nextMoves, depth - 1, -beta, -alpha, -turnMultiplier)
+        if score > maxScore:
+            maxScore = score
+            if depth == DEPTH:
+                nextMove = move
+                print(move, score)
+        gs.undoMove()
+        if maxScore > alpha:
+            alpha = maxScore  # alpha is the new max
+        if alpha >= beta:  # if we find new max is greater than minimum so far in a branch then we stop iterating in that branch as we found a worse move in that branch
+            break
+    return maxScore
 
 '''
 Evaluate the board state for scoring the AI's decision-making.
 This function combines material and positional evaluation.
 '''
-
-
 def scoreBoard(gs):
     if gs.checkMate:
-        return CHECKMATE if not gs.whiteToMove else -CHECKMATE
+        if gs.whiteToMove:
+            gs.checkmate = False
+            return -CHECKMATE  # black wins
+        else:
+            gs.checkmate = False
+            return CHECKMATE  # white wins
     elif gs.staleMate:
         return STALEMATE
 
-    # Consider material balance
-    materialScore = scoreMaterial(gs.board)
-
-    # Optionally, you can add more heuristics for better evaluation, like:
-    # - Piece mobility (how many moves the player can make)
-    # - King safety
-    # - Control of the center
-    # These can be added to refine the AI further.
-
-    return materialScore
-
-
-'''
-Score the board based on material.
-'''
-def scoreMaterial(board):
     score = 0
-    for row in board:
-        for square in row:
-            if not square:  # Check if square is empty
-                continue
-            if square[0] == 'w':  # White pieces
-                score += pieceScore.get(square[1], 0)  # Use .get to avoid KeyError
-            elif square[0] == 'b':  # Black pieces
-                score -= pieceScore.get(square[1], 0)  # Use .get to avoid KeyError
+    for row in range(len(gs.board)):
+        for col in range(len(gs.board[row])):
+            square = gs.board[row][col]
+            if square != "--":
+                piecePositionScore = 0
+                # score positionally based on piece type
+                if square[1] != "K":
+                    # return score of the piece at that position
+                    if square[1] == "p":
+                        piecePositionScore = piecePositionScores[square][row][col]
+                    else:
+                        piecePositionScore = piecePositionScores[square[1]][row][col]
+                if SET_WHITE_AS_BOT:
+                    if square[0] == 'w':
+                        score += pieceScore[square[1]] + piecePositionScore * .1
+                    elif square[0] == 'b':
+                        score -= pieceScore[square[1]] + piecePositionScore * .1
+                else:
+                    if square[0] == 'w':
+                        score -= pieceScore[square[1]] + piecePositionScore * .1
+                    elif square[0] == 'b':
+                        score += pieceScore[square[1]] + piecePositionScore * .1
 
     return score
+
 
 
 
