@@ -5,7 +5,7 @@ It will be responsible for handling user input and displaying the current GameSt
 
 import sys
 import pygame as p
-from chess import chessEngine,ChessAI
+from chess import chessEngine, ChessAI
 from multiprocessing import Process, Queue
 
 #Initialize the mixer
@@ -29,8 +29,8 @@ IMAGES = {} # Key-Value mapping to load chess piece images
 This two variables used for defining AI player and human player.
 '''
 
-SET_WHITE_AS_BOT = False #if true Ai bot plays
-SET_BLACK_AS_BOT = False #if false human plays
+SET_WHITE_AS_BOT = True #if true Ai bot plays
+SET_BLACK_AS_BOT = True #if false human plays
 
 '''
 These are colors used in the code
@@ -185,10 +185,6 @@ def main():
                         playerClicks.append(sqSelected) #append for both 1st and 2nd click
                     if len(playerClicks) == 2 and humanTurn: #after 2nd click
                         move = chessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                        if playerOne:
-                            print("move by Human: "+move.getChessNotation())
-                        else:
-                            print("move by AI: "+move.getChessNotation())
                         for i in range(len(validMoves)):
                             if move == validMoves[i]:
                                 # Check if a piece is captured at the destination square
@@ -257,7 +253,6 @@ def main():
                     pieceCaptured = True
 
                 gs.makeMove(AIMove)
-                print("move by AI: " + AIMove.getChessNotation())  # Print the AI's move
                 if AIMove.isPawnPromotion:
                     # Show pawn promotion popup and get the selected piece
                     promotion_choice = pawnPromotionPopup(screen, gs)
