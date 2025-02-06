@@ -29,8 +29,8 @@ IMAGES = {} # Key-Value mapping to load chess piece images
 This two variables used for defining AI player and human player.
 '''
 
-SET_WHITE_AS_BOT = True #if true Ai bot plays
-SET_BLACK_AS_BOT = True #if false human plays
+SET_WHITE_AS_BOT = False #if true Ai bot plays
+SET_BLACK_AS_BOT = False #if false human plays
 
 '''
 These are colors used in the code
