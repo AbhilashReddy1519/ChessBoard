@@ -66,16 +66,16 @@ By this when pawn is ready to Promote a new popup will appear.
 '''
 
 def pawnPromotionPopup(screen, gs):
-    font = p.font.SysFont("Times New Roman", 30, False, False)
+    font = p.font.SysFont("Arial", 30, False, False)
     text = font.render("Choose promotion:", True, p.Color("black"))
 
     # Create buttons for promotion choices with images
-    button_width, button_height = 100, 100
+    width, height = 100, 100
     buttons = [
-        p.Rect(100, 200, button_width, button_height),
-        p.Rect(200, 200, button_width, button_height),
-        p.Rect(300, 200, button_width, button_height),
-        p.Rect(400, 200, button_width, button_height)
+        p.Rect(100, 200, width, height),
+        p.Rect(200, 200, width, height),
+        p.Rect(300, 200, width, height),
+        p.Rect(400, 200, width, height)
     ]
 
     if gs.whiteToMove:
@@ -134,6 +134,7 @@ The main driver for code.This will handle user input and updating the graphics.
 '''
 
 def main():
+    #initialise py game
     p.init()
     screen = p.display.set_mode((WIDTH + MOVE_LOG_PANEL_WIDTH, HEIGHT))
     clock = p.time.Clock()
@@ -173,11 +174,11 @@ def main():
                 running = False
             #mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
-                if not gameOver and humanTurn: # allow mouse handling only if its not game over
+                if not gameOver: # allow mouse handling only if its not game over
                     location = p.mouse.get_pos() #(x, y) location of mouse
                     col = location[0]//SQ_SIZE
                     row = location[1]//SQ_SIZE
-                    if sqSelected == (row, col) or col >= 0: #user clicked the same square twice
+                    if sqSelected == (row, col) or col >= 8: #user clicked the same square twice
                         sqSelected = () #deselect
                         playerClicks = [] #clear player clicks
                     else:
@@ -193,8 +194,7 @@ def main():
                                 gs.makeMove(validMoves[i])
                                 if move.isPawnPromotion:
                                     # Show pawn promotion popup and get the selected piece
-                                    promotion_choice = pawnPromotionPopup(
-                                        screen, gs)
+                                    promotion_choice = pawnPromotionPopup(screen, gs)
                                     # Set the promoted piece on the board
                                     gs.board[move.endRow][move.endCol] = move.pieceMoved[0] + promotion_choice
                                     promote_sound.play()
@@ -253,6 +253,7 @@ def main():
                     pieceCaptured = True
 
                 gs.makeMove(AIMove)
+
                 if AIMove.isPawnPromotion:
                     # Show pawn promotion popup and get the selected piece
                     promotion_choice = pawnPromotionPopup(screen, gs)
@@ -376,13 +377,12 @@ Draw the moveLog of the pieces moved in the game.
 '''
 
 def drawMoveLog(screen, gs, moveLogFont):
-    moveLogRect = p.Rect(WIDTH, 0, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT)
-    p.draw.rect(screen, p.Color(LIGHT_SQUARE_COLOR), moveLogRect)
+    p.draw.rect(screen, p.Color(LIGHT_SQUARE_COLOR), p.Rect(WIDTH, 0, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT))
     moveLog = gs.moveLog
     moveTexts = []
 
     for i in range(0, len(moveLog), 2):
-        moveString = " " + str(i // 2 + 1) + ". " + str(moveLog[i]) + " " + str(moveLog[i]) + " "
+        moveString = " " + str(i // 2 + 1) + ". " + str(moveLog[i]) + " "
         if i + 1 < len(moveLog):
             moveString += str(moveLog[i+1])
         moveTexts.append(moveString)
@@ -401,7 +401,7 @@ def drawMoveLog(screen, gs, moveLogFont):
         textObject = moveLogFont.render(text, True, p.Color('black'))
 
         # Adjust text location based on padding and line spacing
-        textLocation = moveLogRect.move(padding, textY)
+        textLocation = p.Rect(WIDTH, 0, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT).move(padding, textY)
         screen.blit(textObject, textLocation)
 
         # Update Y coordinate for the next line with increased line spacing
@@ -428,7 +428,7 @@ def animateMove(move, screen, board, clock):
         p.draw.rect(screen, color, endSquare)
         #draw captured piece onto rectangle
         if move.pieceCaptured != '--':
-            if move.isEnpassantMove:
+            if move.isEnPassantMove:
                 enPassantRow = move.endRow + 1 if move.pieceCaptured[0] == 'b' else move.endRow - 1
                 endSquare = p.Rect(move.endCol * SQ_SIZE, enPassantRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)  # pygame rectangle
             screen.blit(IMAGES[move.pieceCaptured], endSquare)

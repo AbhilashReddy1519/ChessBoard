@@ -64,7 +64,7 @@ piecePositionScores = {"N": knightScores, "B": bishopScores, "Q": queenScores,
 
 CHECKMATE = 1000
 STALEMATE = 0
-DEPTH = 3
+DEPTH = 2
 nextMove = None
 SET_WHITE_AS_BOT = -1
 
@@ -89,10 +89,10 @@ def findBestMove(gs, validMoves, returnQueue):
         # Swap the variables
         whitePawnScores, blackPawnScores = blackPawnScores, whitePawnScores
 
-    SET_WHITE_AS_BOT = 1 if gs.whiteToMove else -1
+    BOT = 1 if gs.whiteToMove else -1
 
     findMoveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -
-    CHECKMATE, CHECKMATE, SET_WHITE_AS_BOT)
+    CHECKMATE, CHECKMATE, BOT)
 
     returnQueue.put(nextMove)
 

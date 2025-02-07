@@ -214,8 +214,7 @@ class GameState:
                 else:
                     for i in range(1, 8):
                         # check[2], check[3] are the check directions
-                        validSq = (kingRow + check[2]
-                                   * i, kingCol + check[3] * i)
+                        validSq = (kingRow + check[2] * i, kingCol + check[3] * i)
                         validSquares.append(validSq)
                         # upto the piece applying check
                         if validSq[0] == checkRow and validSq[1] == checkCol:
@@ -631,10 +630,11 @@ class GameState:
                         # 3) Queen in orthogonal or diagonal directions
                         # 4) Pawn if onw square away in any diagonal
                         # 5) King in any direction to 1 square (to prevent king move controlled by another king)
-                        if (0 <= j <= 3 and type == 'R') or (4 <= j <= 7 and type == 'B') or \
-                                (i == 1 and type == 'p' and (
-                                        (enemyColor == 'w' and 6 <= j <= 7) or (enemyColor == 'b' and 4 <= j <= 5))) or \
-                                (type == 'Q') or (i == 1 and type == 'K'):
+                        if ((0 <= j <= 3 and type == 'R') or
+                                (4 <= j <= 7 and type == 'B') or
+                                (i == 1 and type == 'p' and ((enemyColor == 'w' and 6 <= j <= 7) or
+                                                             (enemyColor == 'b' and 4 <= j <= 5))) or
+                                (type == 'Q') or (i == 1 and type == 'K')):
                             '''
                             now check if king is pinned or in check
                             '''
