@@ -538,7 +538,6 @@ class GameState:
     def getQueenMoves(self,r ,c , moves): #since queen moves are combination of knight and bishop
         self.getRookMoves(r ,c , moves)
         self.getBishopMoves(r ,c , moves)
-
     '''
     Get all the king moves for the rook located at row, col and add them to the list of moves.
     '''
