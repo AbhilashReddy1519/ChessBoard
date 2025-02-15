@@ -11,26 +11,28 @@ from multiprocessing import Process, Queue
 #Initialize the mixer
 p.mixer.init()
 
-#load sound files
-move_sound = p.mixer.Sound("sounds/move-sound.mp3")
-capture_sound = p.mixer.Sound("sounds/capture.mp3")
-promote_sound = p.mixer.Sound("sounds/promote.mp3")
+# Sound effects for various game actions
+move_sound = p.mixer.Sound("sounds/move-sound.mp3") # Sound for a piece move
+capture_sound = p.mixer.Sound("sounds/capture.mp3") #Sound for capturing a piece
+promote_sound = p.mixer.Sound("sounds/promote.mp3") # Sound for pawn promotion
 
 
-WIDTH = HEIGHT = 512 #400 is another option
-MOVE_LOG_PANEL_WIDTH = 250
+# Screen dimensions and other constants
+WIDTH = HEIGHT = 512 # Main screen width and height in pixels
+MOVE_LOG_PANEL_WIDTH = 250  # Panel dimensions
 MOVE_LOG_PANEL_HEIGHT = HEIGHT
-DIMENSION = 8 #dimensions of a chess board are 8x8
-SQ_SIZE = HEIGHT // DIMENSION
-MAX_FPS = 15 #for animation later on
-IMAGES = {} # Key-Value mapping to load chess piece images
+DIMENSION = 8 # Chessboard grid (8x8 by default)
+SQ_SIZE = HEIGHT // DIMENSION # Square size
+MAX_FPS = 15 # Frame rate for rendering animations
+IMAGES = {} # Dictionary to cache and load piece images
 
 '''
 This two variables used for defining AI player and human player.
 '''
 
-SET_WHITE_AS_BOT = False #if true Ai bot plays
-SET_BLACK_AS_BOT = False #if false human plays
+SET_WHITE_AS_BOT = True #if true Ai bot plays Setting for if the white side is controlled by AI
+SET_BLACK_AS_BOT = True #if false human plays Setting for if the black side is controlled by AI
+
 
 '''
 These are colors used in the code
@@ -46,6 +48,9 @@ POSSIBLE_MOVE_COLOR = (255, 255, 51)
 
 '''
 Initialise a global dictionary of images. This will be called exactly once in the main
+Loads and caches chess piece images into the global `IMAGES` dictionary.
+This function is used to improve performance by preloading all necessary assets so they can be reused throughout the application.
+
 '''
 
 def loadImages():
@@ -61,8 +66,8 @@ def loadImages():
 #Note: we can access an image by saying IMAGES['wp']
 
 '''
-This is responsible for the pawn promotion popup.
-By this when pawn is ready to Promote a new popup will appear.
+Displays a popup when a pawn reaches the last rank to allow the player to choose
+a piece for promotion. Options typically include Queen, Rook, Bishop, or Knight.
 '''
 
 def pawnPromotionPopup(screen, gs):
@@ -131,6 +136,10 @@ def pawnPromotionPopup(screen, gs):
 
 '''
 The main driver for code.This will handle user input and updating the graphics.
+Key Features:
+    - Handles human-vs-human and bot configuration.
+    - Tracks and highlights legal/potential moves.
+    - Manages animations and sounds for realism.
 '''
 
 def main():
@@ -262,7 +271,7 @@ def main():
                     promote_sound.play()
                     pieceCaptured = False
 
-                if pieceCaptured or AIMove.isEnPassantMove:
+                if pieceCaptured or AIMove.isEnpassantMove:
                     capture_sound.play()
                 elif not AIMove.isPawnPromotion:
                     move_sound.play()
@@ -322,6 +331,9 @@ def main():
 
 '''
 Highlight the square and moves that the user has selected.
+Highlights valid moves and important squares on the chessboard. 
+Colors specified in configuration are applied for readability and gameplay ease.
+
 '''
 def highlightSquares(screen, gs, validMoves, sqSelected):
     if sqSelected != ():
@@ -342,6 +354,9 @@ def highlightSquares(screen, gs, validMoves, sqSelected):
 
 '''
 Responsible for all the graphics within a current game state.
+Draws the complete game state on the Pygame window.
+This includes the chessboard, pieces, move log, and any highlighted squares.
+
 '''
 def drawGameState(screen, gs, validMoves, sqSelected, moveLogFont):
     drawBoard(screen) #draw squares on the board
@@ -352,6 +367,9 @@ def drawGameState(screen, gs, validMoves, sqSelected, moveLogFont):
 
 '''
 Draw the squares on the board.The top left square is always light.
+Draws the chessboard grid based on the `LIGHT_SQUARE_COLOR` and `DARK_SQUARE_COLOR`
+configurations. The board is rendered as an 8x8 grid with alternating colors.
+
 '''
 def drawBoard(screen):
     global colors
@@ -364,6 +382,9 @@ def drawBoard(screen):
 
 '''
 Draw the pieces on the board using the current GameState.board
+Draws the chess pieces on top of the board grid based on the current game state.
+Takes into account the location of all pieces on the `GameState.board` attribute.
+
 '''
 def drawPieces(screen, board):
     for r in range(DIMENSION):
@@ -374,6 +395,10 @@ def drawPieces(screen, board):
 
 '''
 Draw the moveLog of the pieces moved in the game.
+Draws a move log panel on the right side of the screen.
+This log lists all moves made during the game in standard chess notation.
+Useful for analyzing or reviewing gameplay history.
+
 '''
 
 def drawMoveLog(screen, gs, moveLogFont):
@@ -409,6 +434,9 @@ def drawMoveLog(screen, gs, moveLogFont):
 
 '''
 Animating the moves.
+Animates the movement of a piece from the starting square to the ending square.
+This provides a smoother gameplay experience by making transitions visually clear.
+
 '''
 
 def animateMove(move, screen, board, clock):
@@ -428,7 +456,7 @@ def animateMove(move, screen, board, clock):
         p.draw.rect(screen, color, endSquare)
         #draw captured piece onto rectangle
         if move.pieceCaptured != '--':
-            if move.isEnPassantMove:
+            if move.isEnpassantMove:
                 enPassantRow = move.endRow + 1 if move.pieceCaptured[0] == 'b' else move.endRow - 1
                 endSquare = p.Rect(move.endCol * SQ_SIZE, enPassantRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)  # pygame rectangle
             screen.blit(IMAGES[move.pieceCaptured], endSquare)
@@ -438,6 +466,9 @@ def animateMove(move, screen, board, clock):
         clock.tick(60)
 '''
 Display text on the screen.
+Draws any overlay or game-ending text on the screen.
+For example, text like "Checkmate" or "Stalemate" is displayed when required.
+
 '''
 def drawText(screen, text):
     font = p.font.SysFont("Arial", 32, True, True)

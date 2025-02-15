@@ -5,6 +5,12 @@ It will also keep mov log.
 """
 class GameState:
     def __init__(self):
+        """
+            Initializes the GameState object by setting up the board, player turn,
+            castling rights, en passant possibilities, and move logs. Manages the core
+            state of the chess game.
+        """
+
         #board is 8x8 2d list ,each element of the list has 2 characters.
         #The first character represents the color of the piece, 'b' or 'w'
         #The second character represents the type of the piece 'K', 'Q', 'R', 'B', 'N', or 'P'
@@ -65,6 +71,8 @@ class GameState:
 
     '''
     Takes a move as parameter and executes it.(this will not work for castling, pawn promotion and en passant)
+    Makes a move on the board based on the given move object.
+    Updates board state, turn tracking, logs, and special move cases like en passant or promotion.
     '''
     def makeMove(self, move):
         self.board[move.startRow][move.startCol] = "--" # Clear initial square
@@ -113,6 +121,8 @@ class GameState:
 
     '''
     Undo the last move made.
+    Reverts the last move made. This helps in scenarios like "Undo Move" functionality
+    or during move validation by AI algorithms.
     '''
 
     def undoMove(self):
@@ -129,7 +139,7 @@ class GameState:
                 self.blackKingLocation = (move.startRow, move.startCol)
 
             # Undo en passant move
-            if move.isEnPassantMove:
+            if move.isEnpassantMove:
                 self.board[move.endRow][move.startCol] = '--'  # Restore captured pawn
                 self.board[move.startRow][move.endCol] = move.pieceCaptured
 
@@ -158,6 +168,8 @@ class GameState:
 
     '''
     Update the castling rights based on the move that was just made.
+    Updates the castling rights for both sides (white and black) based on the current 
+    game state. Essential for ensuring valid and legal moves.
     '''
     def updateCastleRights(self, move):
         if move.pieceMoved == 'wK':
@@ -184,6 +196,8 @@ class GameState:
 
     '''
     All moves considering checks.
+    Generates and returns a list of all valid moves for the current player.
+    Considers checks, pins, and special rules (e.g., castling, en passant).
     '''
     def getValidMoves(self):
         # 1. generate all possible moves
@@ -198,69 +212,47 @@ class GameState:
             kingCol = self.blackKingLocation[1]
 
         if self.inCheck:
-            # only one check to the king, move the king or block the check with a piece
-            if len(self.checks) == 1:
-                moves = self.getAllPossibleMoves()
-                # (row, col) of the piece which is causing the check
+            if len(self.checks) == 1:  # Single check
                 check = self.checks[0]
-                checkRow = check[0]
-                checkCol = check[1]
-                # position of the piece which is causing the check
+                checkRow, checkCol = check[0], check[1]
                 pieceChecking = self.board[checkRow][checkCol]
-                validSquares = []  # squares that pieces can move to
-                # if check is from knight than either move the king or take the knight
+                validSquares = []
+
+                # If the checking piece is a knight, only capture it or move the king
                 if pieceChecking[1] == 'N':
                     validSquares = [(checkRow, checkCol)]
                 else:
                     for i in range(1, 8):
-                        # check[2], check[3] are the check directions
-                        validSq = (kingRow + check[2] * i, kingCol + check[3] * i)
-                        validSquares.append(validSq)
-                        # upto the piece applying check
-                        if validSq[0] == checkRow and validSq[1] == checkCol:
+                        validSquare = (kingRow + check[2] * i, kingCol + check[3] * i)
+                        validSquares.append(validSquare)
+                        if validSquare == (checkRow, checkCol):
                             break
-                # remove the move that doesn't prevent from check
-                # going backward in all possible moves
+
+                # Remove moves that don't block the check or capture the attacker
                 for i in range(len(moves) - 1, -1, -1):
-                    # as the king is not moved it should block the check if not then remove the move from moves
-                    if moves[i].pieceMoved[1] != 'K':
-                        # if not in validSquares then it do not block check or capture the piece making check
-                        if not (moves[i].endRow, moves[i].endCol) in validSquares:
-                            moves.remove(moves[i])  # remove the moves
-                        #till now, we will be able to find check and can move piece to block check but, we are doing nothing about the pin so it will allow us to move the pin pieced
-                        #what if we move the king and is in the position of pinned we would still be able to move the pinned piece and let king be in check
-            else:  # if double check then king has to move
+                    if moves[i].pieceMoved[1] != 'K':  # Non-king moves
+                        if (moves[i].endRow, moves[i].endCol) not in validSquares:
+                            moves.remove(moves[i])
+            else:  # Double check
                 self.getKingMoves(kingRow, kingCol, moves)
-        else:  # not in check all checks in moves are fine
+        else:
             moves = self.getAllPossibleMoves()
 
-        if len(moves) == 0:  # either checkmate or stalemate
+        if len(moves) == 0:  # Checkmate or stalemate
             if self.inCheck:
                 self.checkMate = True
             else:
                 self.staleMate = True
-        else: # Reset checkmate and stalemate if moves are available
+        else:
             self.checkMate = False
             self.staleMate = False
 
-        # self.enpassantPossible = tempEnpassantPossible
-        # self.currentCastlingRight = tempCastleRights
         return moves
-
-
-
-    '''
-    Determine if the current player is in check.
-    '''
-
-    # def inCheck(self):
-    #     if self.whiteToMove:
-    #         return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
-    #     else:
-    #         return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
 
     '''
     Determine if the enemy can attack the square rc
+    Checks if a specific square is under attack by enemy pieces.
+    This is crucial for validating moves and ensuring king's safety.
     '''
 
     def squareUnderAttack(self, row, col, allyColor):
@@ -300,6 +292,8 @@ class GameState:
 
     '''
     All moves without considering checks.
+    Generates all possible moves for the current board layout regardless of legality.
+    Used internally during move validation and AI evaluations.
     '''
     def getAllPossibleMoves(self):
         moves = []
@@ -314,6 +308,8 @@ class GameState:
 
     '''
     Get all the pawn moves for the pawn located at row, col and add them to the list of moves.
+    Generates all possible pawn moves for the current turn. 
+    This includes single-step, double-step, captures, en passant, and promotion.
     '''
     def getPawnMoves(self, r, c, moves):
         piecePinned = False
@@ -422,6 +418,8 @@ class GameState:
                                           self.board, isEnpassantMove=True))
     '''
     Get all the rook moves for the rook located at row, col and add them to the list of moves.
+    Generates all possible rook moves for the current turn.
+    Considers horizontal and vertical movements, as well as obstacles and captures.
     '''
     def getRookMoves(self, r, c, moves):
         piecePinned = False
@@ -467,6 +465,8 @@ class GameState:
 
     '''
     Get all the Knight moves for the rook located at row, col and add them to the list of moves.
+    Generates all possible knight moves for the current turn.
+    The knight's unique 'L-shaped' movement is implemented, along with capture logic.
     '''
     def getKnightMoves(self,r ,c , moves):
         piecePinned = False
@@ -495,6 +495,8 @@ class GameState:
 
     '''
     Get all the Bishop moves for the rook located at row, col and add them to the list of moves.
+    Generates all possible bishop moves for the current turn.
+    Considers diagonal movements, obstacles, and capturing logic.
     '''
     def getBishopMoves(self,r ,c , moves):
         piecePinned = False
@@ -534,12 +536,17 @@ class GameState:
 
     '''
     Get all the Queen moves for the rook located at row, col and add them to the list of moves.
+    Generates all possible queen moves for the current turn.
+    Combines logic of both rook and bishop for handling queen's movement.
     '''
     def getQueenMoves(self,r ,c , moves): #since queen moves are combination of knight and bishop
         self.getRookMoves(r ,c , moves)
         self.getBishopMoves(r ,c , moves)
     '''
     Get all the king moves for the rook located at row, col and add them to the list of moves.
+    Generates all possible king moves for the current turn.
+    Considers single-square moves in all directions and checks if the move exposes 
+    the king to threats. Includes castling logic.
     '''
     def getKingMoves(self,r ,c , moves):
         allyColor = 'w' if self.whiteToMove else 'b'
@@ -572,6 +579,8 @@ class GameState:
 
     '''
     Get all the castle moves for the king located at row, col and add them to the list of moves. generated for king
+    Validates and generates castling moves. Ensures that the squares are not under attack 
+    and that rooks and king have not moved before.
     '''
     def getCastleMoves(self,r ,c , moves, allyColor):
         if self.squareUnderAttack(r, c, allyColor):
@@ -581,86 +590,91 @@ class GameState:
         if (self.whiteToMove and self.currentCastlingRight.wqs) or (not self.whiteToMove and self.currentCastlingRight.bqs):
             self.getQueensideCastleMoves(r,c,moves,allyColor)
 
-
+    """
+        Checks and returns valid kingside (short) castle moves.
+        Ensures no obstructions and that the king and rook have not previously moved.
+    """
     def getKingsideCastleMoves(self,r,c,moves,allyColor):
         if self.board[r][c+1] == "--" and self.board[r][c+2] == "--" and not self.squareUnderAttack(r, c + 1, allyColor) and not self.squareUnderAttack(r, c + 2, allyColor):
             moves.append(Move((r, c), (r, c + 2), self.board, isCastleMove=True))
+
+    """
+        Checks and returns valid queenside (long) castle moves.
+        Validates obstruction-free movement and ensures the necessary pieces remain unmoved.
+    """
     def getQueensideCastleMoves(self,r,c,moves,allyColor):
         if self.board[r][c - 1] == "--" and self.board[r][c - 2] == "--" and self.board[r][c - 3] == "--" and not self.squareUnderAttack(r, c - 1, allyColor) and not self.squareUnderAttack(r, c - 2, allyColor):
             moves.append(Move((r, c), (r, c - 2), self.board, isCastleMove=True))
 
+    """
+        Identifies all pins and checks on the current player's king.
+        Crucial for move validation and ensuring the king is not left in check.
+    """
     def checkForPinsAndChecks(self):
         pins = []
         checks = []
         inCheck = False
+
         if self.whiteToMove:
             enemyColor = "b"
             allyColor = "w"
-            startRow = self.whiteKingLocation[0]
-            startCol = self.whiteKingLocation[1]
+            startRow, startCol = self.whiteKingLocation
         else:
             enemyColor = "w"
             allyColor = "b"
-            startRow = self.blackKingLocation[0]
-            startCol = self.blackKingLocation[1]
-        # from king position in all directions, look for pins and checks, keep track of pins
+            startRow, startCol = self.blackKingLocation
+
         directions = ((-1, 0), (0, -1), (1, 0), (0, 1),
                       (-1, -1), (-1, 1), (1, -1), (1, 1))
-        for j in range(len(directions)):
-            d = directions[j]
-            possiblePin = ()  # reset
+        for j, d in enumerate(directions):
+            possiblePin = ()
             for i in range(1, 8):
                 endRow = startRow + d[0] * i
                 endCol = startCol + d[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
-                    # find if there is a piece
                     endPiece = self.board[endRow][endCol]
-                    # if it's your piece it could be pinned by enemy
                     if endPiece[0] == allyColor and endPiece[1] != 'K':
-                        if possiblePin == ():  # so add it to the possiblePin
+                        if not possiblePin:
                             possiblePin = (endRow, endCol, d[0], d[1])
-                        else:  # after that square if there is another of allied piece, no pins or check is possible
+                        else:
                             break
-                    elif endPiece[0] == enemyColor:  # if an enemy piece is found
+                    elif endPiece[0] == enemyColor:
                         type = endPiece[1]
-                        # Possibilities
-                        # 1) Rook in any orthogonal directions
-                        # 2) Bishop in any diagonal
-                        # 3) Queen in orthogonal or diagonal directions
-                        # 4) Pawn if onw square away in any diagonal
-                        # 5) King in any direction to 1 square (to prevent king move controlled by another king)
                         if ((0 <= j <= 3 and type == 'R') or
                                 (4 <= j <= 7 and type == 'B') or
                                 (i == 1 and type == 'p' and ((enemyColor == 'w' and 6 <= j <= 7) or
                                                              (enemyColor == 'b' and 4 <= j <= 5))) or
                                 (type == 'Q') or (i == 1 and type == 'K')):
-                            '''
-                            now check if king is pinned or in check
-                            '''
-                            if possiblePin == ():  # no ally piece front of king, so check
+                            if not possiblePin:
                                 inCheck = True
                                 checks.append((endRow, endCol, d[0], d[1]))
                                 break
-                            else:  # piece blocking so pin
+                            else:
                                 pins.append(possiblePin)
                                 break
-                        else:  # enemy piece front of king but not applying any check
+                        else:
                             break
-                    else:
-                        break  # off board
-            # check for knight checks
-            knightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2),
-                           (1, -2), (1, 2), (2, -1), (2, 1))
-            for m in knightMoves:
-                endRow = startRow + m[0]
-                endCol = startCol + m[1]
-                if 0 <= endRow < 8 and 0 <= endCol < 8:
-                    endPiece = self.board[endRow][endCol]
-                    if endPiece[0] == enemyColor and endPiece[1] == 'N':
-                        inCheck = True
-                        checks.append((endRow, endCol, m[0], m[1]))
-            return inCheck, pins, checks
+                else:
+                    break
 
+        # Check for knight checks
+        knightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2),
+                       (1, -2), (1, 2), (2, -1), (2, 1))
+        for m in knightMoves:
+            endRow = startRow + m[0]
+            endCol = startCol + m[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] == enemyColor and endPiece[1] == 'N':
+                    inCheck = True
+                    checks.append((endRow, endCol, m[0], m[1]))
+
+        return inCheck, pins, checks
+
+    """
+        Returns the board layout as a string for easier debugging and printing/logging.
+        Useful for testing or representing the game state in a human-readable format.
+    """
     def getBoardString(self):
         # Convert the board state to a string
         boardString = ""
@@ -699,6 +713,10 @@ class Move:
         "K": "K"
     }
 
+    """
+        Initializes a Move object that represents a specific action on the chessboard.
+        Stores details like start square, end square, captured pieces, special moves (e.g., promotion, en passant).
+    """
     def __init__(self, startSq, endSq, board, isEnpassantMove = False, isCastleMove = False):
         self.startRow = startSq[0]
         self.startCol = startSq[1]
@@ -735,26 +753,41 @@ class Move:
 
     '''
     Overriding the equals method to compare two moves.
+    Overrides the equality operator to allow proper comparison of moves.
+    Moves are considered equal if their starting and ending positions are the same.
     '''
     def __eq__(self, other):
         if isinstance(other, Move):
             return self.moveID == other.moveID
         return False
 
+    """
+        Returns the human-readable chess notation for the move (e.g., e4, Nf3, O-O).
+    """
     def getChessNotation(self):
         #you can add to make this like real chess notation
         return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
 
-
+    """
+        Converts a board matrix position (row, col) into chess notation (e.g., e2, d4).
+        Useful when displaying moves or generating move logs.
+    """
     def getRankFile(self, r, c):
         return self.colsToFiles[c] + self.rowsToRanks[r]
 
+    """
+        Returns the shorthand chess notation for a piece (e.g., P for pawn, R for rook).
+    """
     def getPieceNotation(self, piece, col):
         if piece[1] == 'p':
             return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
         return self.pieceNotation[piece[1]] + self.colsToFiles[col]
 
     # overriding the str() function
+    """
+        Returns a string representation of the move, typically in chess notation.
+        Used for debugging and displaying move information.
+    """
     def __str__(self):
         # castle move:
         if self.isCastleMove:
