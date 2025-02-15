@@ -86,7 +86,7 @@ class GameState:
         #     self.board[move.endRow][move.endCol] = move.pieceMoved[0] + 'Q'
 
         #enpassasnt move
-        if move.isEnPassantMove:
+        if move.isEnpassantMove:
             self.board[move.startRow][move.endCol] = "--" #capturing the pawn
 
         #update enpassant possible variable
@@ -187,7 +187,7 @@ class GameState:
     '''
     def getValidMoves(self):
         # 1. generate all possible moves
-        moves = []
+        moves = self.getAllPossibleMoves()
         self.inCheck, self.pins, self.checks = self.checkForPinsAndChecks()
 
         if self.whiteToMove:
@@ -726,7 +726,7 @@ class Move:
                     self.pieceMoved == "bp" and self.endRow == 7)
 
         # enpassant
-        self.isEnPassantMove = isEnpassantMove
+        self.isEnpassantMove = isEnpassantMove
 
         #castle move
         self.isCastleMove = isCastleMove

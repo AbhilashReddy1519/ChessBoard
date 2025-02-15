@@ -200,7 +200,7 @@ def main():
                                     promote_sound.play()
                                     pieceCaptured = False
                                 #add sound for human move
-                                if pieceCaptured or move.isEnPassantMove:
+                                if pieceCaptured or move.isEnpassantMove:
                                     capture_sound.play() #plays capture sound
                                 elif not move.isPawnPromotion:
                                     move_sound.play() #plays move sound

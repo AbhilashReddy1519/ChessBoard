@@ -4,7 +4,7 @@ This is responsible for handling AI moves by using different algorithms.
 """
 import random
 
-pieceScore = {"K": 0, "Q": 10, "R": 5, "B": 3, "N": 3, "p": 1}
+pieceScore = {"K": 0, "Q": 9, "R": 5, "B": 3, "N": 3, "p": 1}
 knightScores = [[1, 1, 1, 1, 1, 1, 1, 1],
                 [1, 2, 2, 2, 2, 2, 2, 1],
                 [1, 2, 3, 3, 3, 3, 2, 1],
@@ -133,10 +133,10 @@ This function combines material and positional evaluation.
 def scoreBoard(gs):
     if gs.checkMate:
         if gs.whiteToMove:
-            gs.checkmate = False
+            gs.checkMate = False
             return -CHECKMATE  # black wins
         else:
-            gs.checkmate = False
+            gs.checkMate = False
             return CHECKMATE  # white wins
     elif gs.staleMate:
         return STALEMATE
